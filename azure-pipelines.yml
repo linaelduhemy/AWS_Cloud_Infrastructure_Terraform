@@ -39,7 +39,7 @@ stages:
     - script: |
         cd $(terraformWorkingDirectory)
         terraform init
-        terraform plan -out=tfplan
+        terraform plan
       displayName: 'Terraform Plan'
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')) # Necessary to run only on PR
 
@@ -61,6 +61,6 @@ stages:
     - script: |
         cd $(terraformWorkingDirectory)
         terraform init
-        terraform apply -auto-approve tfplan
+        terraform apply -auto-approve
       displayName: 'Terraform Apply'
     condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI')) # Necessary to run only on merge
