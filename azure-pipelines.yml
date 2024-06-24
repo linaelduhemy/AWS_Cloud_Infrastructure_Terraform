@@ -1,0 +1,64 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - '*'
+
+pr:
+  branches:
+    include:
+      - '*'
+
+pool:
+  name: aws-self-hosted
+
+variables: # Optional but recommended for maintainability
+  terraformWorkingDirectory: 'terraform'  # Path to your Terraform configuration
+
+# Define the stages, jobs, and steps
+stages:
+- stage: Plan
+  displayName: Plan
+  jobs:
+  - job: Plan
+    displayName: Plan
+    steps:
+    - checkout: self # Necessary to checkout code
+    - task: UsePythonVersion@0 # Necessary to specify Python version
+      inputs:
+        versionSpec: '3.x'
+    - script: | # Necessary to install dependencies and run Terraform commands
+        python -m pip install --upgrade pip
+        pip install -r $(terraformWorkingDirectory)/requirements.txt
+      displayName: 'Install Python dependencies'
+    - script: |
+        cd $(terraformWorkingDirectory)
+        terraform init
+        terraform plan -out=tfplan
+      displayName: 'Terraform Plan'
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')) # Necessary to run only on PR
+
+- stage: Apply
+  displayName: Apply
+  jobs:
+  - job: Apply
+    displayName: Apply
+    steps:
+    - checkout: self # Necessary to checkout code
+    - task: UsePythonVersion@0 # Necessary to specify Python version
+      inputs:
+        versionSpec: '3.x'
+    - script: | # Necessary to install dependencies and run Terraform commands
+        python -m pip install --upgrade pip
+        pip install -r $(terraformWorkingDirectory)/requirements.txt
+      displayName: 'Install Python dependencies'
+    - script: |
+        cd $(terraformWorkingDirectory)
+        terraform init
+        terraform apply -auto-approve tfplan
+      displayName: 'Terraform Apply'
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI')) # Necessary to run only on merge
