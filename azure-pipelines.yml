@@ -30,9 +30,12 @@ stages:
     - checkout: self # Necessary to checkout code
     - script: |
         sudo apt-get update
-        sudo apt-get install -y python3 python3-pip
-        python3 -m pip install --upgrade pip
-      displayName: 'Install Python'
+        sudo apt-get install -y gnupg software-properties-common curl
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update
+        sudo apt-get install -y terraform
+      displayName: 'Install Terraform'
     - script: |
         cd $(terraformWorkingDirectory)
         terraform init
@@ -49,9 +52,12 @@ stages:
     - checkout: self # Necessary to checkout code
     - script: |
         sudo apt-get update
-        sudo apt-get install -y python3 python3-pip
-        python3 -m pip install --upgrade pip
-      displayName: 'Install Python'
+        sudo apt-get install -y gnupg software-properties-common curl
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update
+        sudo apt-get install -y terraform
+      displayName: 'Install Terraform'
     - script: |
         cd $(terraformWorkingDirectory)
         terraform init
