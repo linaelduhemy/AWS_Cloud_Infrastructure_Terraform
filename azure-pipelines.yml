@@ -38,7 +38,7 @@ stages:
       displayName: 'Install Terraform'
     - script: |
         cd $(terraformWorkingDirectory)
-        terraform init
+        terraform init -reconfigure
         terraform plan
       displayName: 'Terraform Plan'
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')) # Necessary to run only on PR
@@ -60,7 +60,7 @@ stages:
       displayName: 'Install Terraform'
     - script: |
         cd $(terraformWorkingDirectory)
-        terraform init
+        terraform init -reconfigure
         terraform apply -auto-approve
       displayName: 'Terraform Apply'
     condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI')) # Necessary to run only on merge
