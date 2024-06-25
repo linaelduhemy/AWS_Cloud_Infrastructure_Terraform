@@ -16,8 +16,8 @@ pr:
 pool:
   name: aws-self-hosted
 
-variables: # Optional but recommended for maintainability
-  terraformWorkingDirectory: 'terraform'  # Path to your Terraform configuration
+# variables: # Optional but recommended for maintainability
+#   terraformWorkingDirectory: 'terraform'  # Path to your Terraform configuration
 
 # Define the stages, jobs, and steps
 stages:
@@ -28,39 +28,54 @@ stages:
     displayName: Plan
     steps:
     - checkout: self # Necessary to checkout code
-    - script: |
-        sudo apt-get update
-        sudo apt-get install -y gnupg software-properties-common curl
-        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-        sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-        sudo apt-get update
-        sudo apt-get install -y terraform
-      displayName: 'Install Terraform'
-    - script: |
-        cd $(terraformWorkingDirectory)
-        terraform init -reconfigure
-        terraform plan
-      displayName: 'Terraform Plan'
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        backendServiceAWS: 'AWS for terraform'
+        backendAWSBucketName: 'terraform-s3-day2'
+        backendAWSKey: 'terraform.tfstate'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'plan'
+        environmentServiceNameAWS: 'AWS for terraform'
+    # - script: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y gnupg software-properties-common curl
+    #     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+    #     sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    #     sudo apt-get update
+    #     sudo apt-get install -y terraform
+    #   displayName: 'Install Terraform'
+    # - script: |
+    #     cd $(terraformWorkingDirectory)
+    #     terraform init -reconfigure
+    #     terraform plan
+    #   displayName: 'Terraform Plan'
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')) # Necessary to run only on PR
 
-- stage: Apply
-  displayName: Apply
-  jobs:
-  - job: Apply
-    displayName: Apply
-    steps:
-    - checkout: self # Necessary to checkout code
-    - script: |
-        sudo apt-get update
-        sudo apt-get install -y gnupg software-properties-common curl
-        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-        sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-        sudo apt-get update
-        sudo apt-get install -y terraform
-      displayName: 'Install Terraform'
-    - script: |
-        cd $(terraformWorkingDirectory)
-        terraform init -reconfigure
-        terraform apply -auto-approve
-      displayName: 'Terraform Apply'
-    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI')) # Necessary to run only on merge
+# - stage: Apply
+#   displayName: Apply
+#   jobs:
+#   - job: Apply
+#     displayName: Apply
+#     steps:
+#     - checkout: self # Necessary to checkout code
+#     - script: |
+#         sudo apt-get update
+#         sudo apt-get install -y gnupg software-properties-common curl
+#         curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+#         sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+#         sudo apt-get update
+#         sudo apt-get install -y terraform
+#       displayName: 'Install Terraform'
+#     - script: |
+#         cd $(terraformWorkingDirectory)
+#         terraform init -reconfigure
+#         terraform apply -auto-approve
+#       displayName: 'Terraform Apply'
+#     condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI')) # Necessary to run only on merge
