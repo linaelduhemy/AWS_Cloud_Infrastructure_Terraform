@@ -28,6 +28,10 @@ stages:
     displayName: Plan
     steps:
     - checkout: self # Necessary to checkout code
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y unzip
+      displayName: 'Install Unzip'
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
@@ -65,6 +69,10 @@ stages:
     displayName: Apply
     steps:
     - checkout: self # Necessary to checkout code
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y unzip
+      displayName: 'Install Unzip'
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
